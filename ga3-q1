@@ -1,0 +1,63 @@
+// A reusable function to fetch from the GitHub API using a token
+async function fetchWithToken(endpoint, token) {
+    const url = `https://api.github.com${endpoint}`;
+    console.log(`Fetching from: ${url}`);
+
+    const headers = {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': `token ${token}`
+    };
+
+    const response = await fetch(url, { headers });
+
+    if (!response.ok) {
+        // Give a more detailed error if the request fails
+        const errorBody = await response.text();
+        throw new Error(`API request failed with status ${response.status}: ${errorBody}`);
+    }
+    return response.json();
+}
+
+// Main logic to get your specific file's contents
+async function getRepoFileContents() {
+    const owner = "megha7-lab";
+    const repo = "email-verifying";
+    const filePath = "ga3-1q"; // The file path inside your repository
+
+    // Construct the API endpoint for getting repository contents
+    const endpoint = `/repos/${owner}/${repo}/contents/${filePath}`;
+
+    // Read the token from your environment variable
+    const token = process.env.GITHUB_TOKEN;
+    if (!token) {
+        console.error("\nERROR: GITHUB_TOKEN is not set in your environment.");
+        console.error("In your PowerShell terminal, please run the command:");
+        console.error("$env:GITHUB_TOKEN='ghp_YOUR_REAL_TOKEN'");
+        return;
+    }
+
+    try {
+        const fileData = await fetchWithToken(endpoint, token);
+
+        // Check if the content property exists before trying to decode
+        if (fileData && fileData.content) {
+            const encodedContent = fileData.content;
+            // Decode the Base64 content to readable text (utf8)
+            const decodedContent = Buffer.from(encodedContent, 'base64').toString('utf8');
+
+            console.log(`\n--- Content of ${filePath} ---`);
+            console.log(decodedContent);
+            console.log("------------------------");
+        } else {
+            console.log("Could not retrieve file content. The response did not contain a 'content' field.");
+            console.log("Please check if the file path is correct and the file is not empty or a directory.");
+        }
+
+    } catch (error) {
+        console.error(`\nFailed to fetch file contents.`, error.message);
+        console.error("Please verify that your token has the correct 'repo' scope and that the owner, repository, and file path are all correct.");
+    }
+}
+
+// Run the main function
+getRepoFileContents();
