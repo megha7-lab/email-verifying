@@ -1,5 +1,16 @@
-Project: GA3-Q1
+# Project: GitHub API Task (GA3-Q1)
 
-This project contains the `q1.js` script.
+This repository holds the code for a Node.js script that interacts with the GitHub API.
 
-The script is designed to fetch the creation date of a specific GitHub repository by using the official GitHub API.
+## Main Script: `q1.js`
+
+The script `q1.js` is designed to be run locally on a computer.
+
+## Purpose
+
+The main function of the `q1.js` script is to fetch the creation date for a specific public repository on GitHub and print that information to the console in a formatted log.
+
+## How to Use
+
+1. Ensure Node.js is installed on your machine.
+2. Run the script from your terminal using the command: `node q1.js`
