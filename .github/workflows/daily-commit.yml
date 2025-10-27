@@ -1,10 +1,14 @@
 name: Daily Auto Commit
 
+# run at 09:00 UTC every day — change to any specific hour/minute required
 on:
   schedule:
-    # Runs every day at 09:00 UTC (adjust hour/minute if needed)
     - cron: '0 9 * * *'
   workflow_dispatch:
+
+# ensure this job has write permission to repo contents
+permissions:
+  contents: write
 
 jobs:
   auto-commit:
@@ -12,15 +16,25 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          # Keep credentials so git push can authenticate with GITHUB_TOKEN
+          persist-credentials: true
+          fetch-depth: 0
 
       - name: Update file with email 24f2003594@ds.study.iitm.ac.in
         run: |
-          echo "Last update: $(date -u)" > daily_update.log
+          echo "Last update (UTC): $(date -u)" > daily_update.log
+          echo "Updated by 24f2003594@ds.study.iitm.ac.in" >> daily_update.log
 
       - name: Commit changes
         run: |
-          git config --global user.name "GitHub Action Bot"
-          git config --global user.email "24f2003594@ds.study.iitm.ac.in"
-          git add .
-          git commit -m "Daily auto-update: $(date -u)" || echo "No changes to commit"
-          git push
+          git config user.name "GitHub Action Bot"
+          git config user.email "24f2003594@ds.study.iitm.ac.in"
+          git add daily_update.log
+          # commit only if there are changes
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Daily auto-update: $(date -u)"
+            git push
+          fi
